@@ -22,3 +22,10 @@ INPUT_DIR = 'streaming_input'
 streaming_dir = os.path.join(curr_dir,INPUT_DIR)
 make_dir_if_not_exists(streaming_dir)
 
+lines = ssc.textFileStream(streaming_dir)
+counts = lines.flatMap(lambda line: line.split(" "))\
+          .map(lambda x: (x, 1))\
+          .reduceByKey(lambda x, y: x+y)
+counts.pprint()
+ssc.start()
+ssc.awaitTermination()
