@@ -1,72 +1,44 @@
-import os
+import sys
 import logging
-from pyspark import SparkContext
-from pyspark.streaming import StreamingContext
 import file_io_utils as fu
-import random
+import os
+import time
+from markov import simulate, gen_transition_matrix
 
 logging.basicConfig()
-logging.getLogger(__name__)
+LOG = logging.getLogger()
 
 
-batch_duration_seconds = 5
+def main():
+    runs = int(sys.argv[1])
+    pause_duration = int(sys.argv[2])
 
-sc = SparkContext.getOrCreate()
-ssc = StreamingContext(sc, batch_duration_seconds)
+    dir_ = os.path.join(fu.get_this_dir(), 'streaming_input')
+    fu.delete_dir(dir_)
+    fu.make_dir(dir_)
 
-curr_dir = fu.get_this_dir()
-INPUT_DIR = 'streaming_input'
-streaming_dir = os.path.join(curr_dir,INPUT_DIR)
+    process = ['homepage',
+               'gallery',
+               'product_details',
+               'basket',
+               'checkout',
+               'confirmation',
+               'account',
+               'delivery_status']
+    transition_matrix = gen_transition_matrix(len(process))
+    entity = 'customer_a'
 
-lines = ssc.textFileStream(streaming_dir)
-# counts = lines.flatMap(lambda line: line.split(" "))\
-#           .map(lambda x: (x, 1))\
-#           .reduceByKey(lambda x, y: x+y)
-# counts.pprint()
+    while True:
 
-# lines.pprint(5)
-split_lines = lines.map(lambda  line: line.split(","))
-# split_lines.pprint((5))
-count_ = split_lines.count()
-# count_.pprint()
+        rows = []
+        for a, b in simulate(runs, process, transition_matrix):
+            rows.append([entity, a, b])
 
-single_list = split_lines.flatMap(lambda x:x)
-# single_list.pprint(20)
+        path = os.path.join(dir_, fu.get_random_filename())
+        fu.write_csv(path, rows)
 
-single_list.countByValue().pprint()
-single_list.\
-    map(lambda x: (x, 1)).\
-    countByValue().\
-    pprint()
+        time.sleep(pause_duration)
 
-# split_lines.\
-#     map(lambda x: ('key', x)).\
-#     pprint()
-#
-# split_lines.\
-#     map(lambda x: ('key', x)).\
-#     flatMapValues(lambda x:x).\
-#     pprint()
-
-# split_lines.\
-#     map(lambda x: (str(random.randint(1,3)), x)).\
-#     groupByKey().\
-#     reduce(lambda x, y: x+y).\
-#     pprint()
-#
-# split_lines.\
-#     map(lambda x: (str(random.randint(1,3)), x)).\
-#     reduceByKey(lambda x, y: x+y).\
-#     pprint()
-
-split_lines.\
-    map(lambda x: (str(random.randint(1,3)), x)).\
-    flatMapValues(lambda x: x).\
-    mapValues(lambda x: (x,1)).\
-    reduceByKey(lambda x, y: x+y).\
-    pprint()
-    # mapValues(lambda x: (x,1)).\
-    # pprint()
-
-ssc.start()
-ssc.awaitTermination()
+if __name__ == '__main__':
+    LOG.setLevel(logging.DEBUG)
+    main()
