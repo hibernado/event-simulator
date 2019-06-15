@@ -5,6 +5,7 @@ import os
 import time
 import math
 from markov import simulate, gen_transition_matrix
+from config import config
 
 logging.basicConfig()
 LOG = logging.getLogger()
@@ -65,12 +66,15 @@ class FileSimulation(BaseSimulation):
     def duration(self):
         return math.ceil(60/self.frequency)
 
-    def run(self, simulator):
+    def set_sim(self, simulator):
+        self.simulator = simulator
+
+    def run(self):
 
         while True:
 
             rows = []
-            for row in simulator.gen_row():
+            for row in self.simulator.gen_row():
                 rows.append(row)
 
             path = os.path.join(self.dir, fu.get_random_filename())
@@ -79,23 +83,30 @@ class FileSimulation(BaseSimulation):
             time.sleep(self.duration)
 
 
-def main():
-    # runs = int(sys.argv[1])
-    # pause_duration = int(sys.argv[2])
+def create_sim(config_name):
 
-    process = ['homepage',
-               'gallery',
-               'product_details',
-               'basket',
-               'checkout',
-               'confirmation',
-               'account',
-               'delivery_status']
-    sim = FabAppSimulator(entity='customerA', process=process, run_per_iter=10)
-    fsim = FileSimulation(dir='./streaming_input', frequency=20)
-    fsim.run(sim)
+    Config = config[config_name]
+    entity = Config.entity
+    process = Config.process
+    run_per_iter = Config.run_per_iter
+    dir = Config.dir
+    frequency = Config.frequency
+    sim = FabAppSimulator(entity=entity,
+                          process=process,
+                          run_per_iter=run_per_iter)
+    fsim = FileSimulation(dir=dir,
+                          frequency=frequency)
+    fsim.set_sim(sim)
+    return fsim
+
+
+def main(config_name):
+
+    sim = create_sim(config_name)
+    sim.run()
+
 
 
 if __name__ == '__main__':
     LOG.setLevel(logging.DEBUG)
-    main()
+    main(sys.argv[1])
