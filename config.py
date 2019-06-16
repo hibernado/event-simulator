@@ -9,21 +9,21 @@ class Config:
 class EcommerceUserConfig(Config):
     SIMULATOR_TYPE = 'one_ecommerce_visitor'
 
-    # ECOM_PROCESS = ['homepage',
-    #            'gallery',
-    #            'product_details',
-    #            'basket',
-    #            'checkout',
-    #            'confirmation',
-    #            'account',
-    #            'delivery_status']
+    ECOM_PROCESS = ['homepage',
+               'gallery',
+               'product_details',
+               'basket',
+               'checkout',
+               'confirmation',
+               'account',
+               'delivery_status']
     #
     # ECOM_ENTITY = 'CustomerA'
-    # ECOM_RUNS_PER_ITER = 20
+    ECOM_RUNS_PER_ITER = 20
     #
     # OUTPUT_TYPE = 'file'
     OUTPUT_DIR = './streaming_input'
-    # OUTPUT_FILE_FREQUENCY = 20
+    OUTPUT_FILE_FREQUENCY = 20
 
     @classmethod
     def init_sim(sim):

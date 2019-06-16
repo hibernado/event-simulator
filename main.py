@@ -6,6 +6,7 @@ import time
 import math
 from markov import simulate, gen_transition_matrix
 from config import config
+from file_io_utils import make_dir
 
 
 class BaseSimulator:
@@ -17,6 +18,10 @@ class BaseSimulator:
         self.logger = self._get_logger()
         self.config = Config()
 
+        self.queue = []
+        self.get = self._get
+        self.put = self._put
+
     def _get_logger(self):
         logging.basicConfig()
         logger = logging.getLogger(self.name)
@@ -25,31 +30,81 @@ class BaseSimulator:
     def run(self):
         raise NotImplementedError
 
+    def _put(self):
+        raise NotImplementedError
+
+    def _get(self):
+        raise NotImplementedError
+
+
+import asyncio
+
 
 class Simulator(BaseSimulator):
     def __init__(self, name):
         super().__init__(name)
 
-    def run(self):
+        self.tasks = []
+
+    async def get_event(self):
+        while True:
+            print('new_event')
+            self.queue.append(self.get())
+            await asyncio.sleep(1)
+
+    async def put_event(self):
+        while True:
+            print('write_event')
+            self.put(self.queue)
+            self.queue = []
+            await asyncio.sleep(3)
+
+    def stop(self):
+        for task in self.tasks:
+            task.cancel()
+
+    def run(self, duration):
         print('run')
-        self.output.send_out()
+        loop = asyncio.get_event_loop()
+        self.tasks.append(loop.create_task(self.get_event()))
+        self.tasks.append(loop.create_task(self.put_event()))
 
-        # self.process = process
-        # self.runs_per_iter = run_per_iter
-        #
-        # self.simulator = simulate
-        # self.transition_matrix = gen_transition_matrix(len(process))
+        loop.call_later(duration, self.stop)
 
-    # def _simulate(self):
-    #
-    #     for a, b in self.simulator(self.config.runs_per_iter,
-    #                                self.config.process,
-    #                                self.config.transition_matrix):
-    #         yield a, b
-    #
-    # def gen_data(self):
-    #     for a, b in self._simulate():
-    #         yield a, b
+        try:
+            pending = asyncio.Task.all_tasks()
+            loop.run_until_complete(asyncio.gather(*pending))
+        except asyncio.CancelledError as e:
+            print('task cancelled: %s' % e)
+
+
+class MarkovProcess:
+
+    def __init__(self, process=None, runs_per_iter=None):
+
+        self.process = process
+        self.runs_per_iter = runs_per_iter
+        self.simulator = simulate
+
+    def _init_matrix(self):
+        self.transition_matrix = gen_transition_matrix(len(self.process))
+
+    def init_sim(self, sim, process, runs_per_iter):
+        self.process = process
+        self.runs_per_iter = runs_per_iter
+        self._init_matrix()
+        sim.get = self.get_next
+
+    def get_next(self):
+
+        return next(self._simulate())
+
+    def _simulate(self):
+
+        for a, b in self.simulator(self.runs_per_iter,
+                                   self.process,
+                                   self.transition_matrix):
+            yield a, b
 
 
 
@@ -74,26 +129,36 @@ class Config(dict):
                 self[key] = getattr(config_object, key)
 
 
-class StreamingAppSimulator(BaseSimulator):
-    target = 'streaming_app_simulator'
+class BaseStreamer:
 
-    def __init__(self, name):
+    def __init__(self):
         super().__init__()
 
+    def init_sim(self):
+        raise NotImplementedError
 
-class FileStreamer:
-    frequency = None
+    def append(self):
+        raise NotImplementedError
+
+
+class FileStreamer(BaseStreamer):
+    freq = None
     dir = None
 
     def __init__(self):
         super().__init__()
 
-    def init_sim(self, sim):
-        self.frequency = sim.config.get('OUTPUT_DIR')
-        sim.output = self
+    def init_sim(self, sim, dir, freq):
+        self.dir = dir
+        self.freq = sim.config.get
+        # Register streamer with sim
+        sim.put = self.write_rows
 
-    def send_out(self):
-        print('write file')
+    def write_rows(self, rows):
+        make_dir(self.dir)
+        path = os.path.join(self.dir, fu.get_random_filename())
+        fu.write_csv(path, rows)
+
 
 
 class FileSimulation:
@@ -157,5 +222,5 @@ def main(config_name):
 
 
 if __name__ == '__main__':
-    LOG.setLevel(logging.DEBUG)
+    # LOG.setLevel(logging.DEBUG)
     main(sys.argv[1])
