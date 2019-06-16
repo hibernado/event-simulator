@@ -7,29 +7,50 @@ import math
 from markov import simulate, gen_transition_matrix
 from config import config
 
-logging.basicConfig()
-LOG = logging.getLogger()
-
 
 class BaseSimulator:
 
-    def __init__(self, process, run_per_iter):
+    def __init__(self, name):
         super().__init__()
-        self.process = process
-        self.runs_per_iter = run_per_iter
 
-        self.simulator = simulate
-        self.transition_matrix = gen_transition_matrix(len(process))
+        self.name = name
+        self.logger = self._get_logger()
+        self.config = Config()
 
-    def _simulate(self):
-        for a, b in self.simulator(self.runs_per_iter,
-                                   self.process,
-                                   self.transition_matrix):
-            yield a, b
+    def _get_logger(self):
+        logging.basicConfig()
+        logger = logging.getLogger(self.name)
+        return logger
 
-    def gen_data(self):
-        for a, b in self._simulate():
-            yield a, b
+    def run(self):
+        raise NotImplementedError
+
+
+class Simulator(BaseSimulator):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def run(self):
+        print('run')
+        self.output.send_out()
+
+        # self.process = process
+        # self.runs_per_iter = run_per_iter
+        #
+        # self.simulator = simulate
+        # self.transition_matrix = gen_transition_matrix(len(process))
+
+    # def _simulate(self):
+    #
+    #     for a, b in self.simulator(self.config.runs_per_iter,
+    #                                self.config.process,
+    #                                self.config.transition_matrix):
+    #         yield a, b
+    #
+    # def gen_data(self):
+    #     for a, b in self._simulate():
+    #         yield a, b
+
 
 
 class FabAppSimulator(BaseSimulator):
@@ -43,11 +64,39 @@ class FabAppSimulator(BaseSimulator):
             yield [self.entity, a, b]
 
 
-class BaseSimulation:
-    pass
+class Config(dict):
+    def __init__(self, defaults=None):
+        dict.__init__(self, defaults or {})
+
+    def from_object(self, config_object):
+        for key in dir(config_object):
+            if key.isupper():
+                self[key] = getattr(config_object, key)
 
 
-class FileSimulation(BaseSimulation):
+class StreamingAppSimulator(BaseSimulator):
+    target = 'streaming_app_simulator'
+
+    def __init__(self, name):
+        super().__init__()
+
+
+class FileStreamer:
+    frequency = None
+    dir = None
+
+    def __init__(self):
+        super().__init__()
+
+    def init_sim(self, sim):
+        self.frequency = sim.config.get('OUTPUT_DIR')
+        sim.output = self
+
+    def send_out(self):
+        print('write file')
+
+
+class FileSimulation:
     frequency = None
     dir = None
 
