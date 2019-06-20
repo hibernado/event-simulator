@@ -13,7 +13,7 @@ def create_sim(config_name):
     markov_process.init_sim(sim=sim,
                             process=sim.config.get('ECOM_PROCESS'),
                             runs_per_iter=sim.config.get('ECOM_RUNS_PER_ITER'))
-    return sim #, file_streamer
+    return sim
 
 
 def main(config_name, duration):
