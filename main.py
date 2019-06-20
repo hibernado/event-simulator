@@ -4,6 +4,7 @@ import file_io_utils as fu
 import os
 import time
 import math
+import asyncio
 from markov import simulate, gen_transition_matrix
 from config import config
 from file_io_utils import make_dir
@@ -19,8 +20,6 @@ class BaseSimulator:
         self.config = Config()
 
         self.queue = []
-        self.get = self._get
-        self.put = self._put
 
     def _get_logger(self):
         logging.basicConfig()
@@ -29,15 +28,6 @@ class BaseSimulator:
 
     def run(self):
         raise NotImplementedError
-
-    def _put(self):
-        raise NotImplementedError
-
-    def _get(self):
-        raise NotImplementedError
-
-
-import asyncio
 
 
 class Simulator(BaseSimulator):
@@ -48,13 +38,11 @@ class Simulator(BaseSimulator):
 
     async def get_event(self):
         while True:
-            print('new_event')
             self.queue.append(self.get())
-            await asyncio.sleep(1)
+            await asyncio.sleep(.1)
 
     async def put_event(self):
         while True:
-            print('write_event')
             self.put(self.queue)
             self.queue = []
             await asyncio.sleep(3)
@@ -75,7 +63,7 @@ class Simulator(BaseSimulator):
             pending = asyncio.Task.all_tasks()
             loop.run_until_complete(asyncio.gather(*pending))
         except asyncio.CancelledError as e:
-            print('task cancelled: %s' % e)
+            print('run cancelled')
 
 
 class MarkovProcess:
@@ -107,16 +95,15 @@ class MarkovProcess:
             yield a, b
 
 
-
-class FabAppSimulator(BaseSimulator):
-
-    def __init__(self, entity, **kwargs):
-        super().__init__(**kwargs)
-        self.entity = entity
-
-    def gen_row(self):
-        for a, b in self._simulate():
-            yield [self.entity, a, b]
+# class FabAppSimulator(BaseSimulator):
+#
+#     def __init__(self, entity, **kwargs):
+#         super().__init__(**kwargs)
+#         self.entity = entity
+#
+#     def gen_row(self):
+#         for a, b in self._simulate():
+#             yield [self.entity, a, b]
 
 
 class Config(dict):
@@ -137,9 +124,6 @@ class BaseStreamer:
     def init_sim(self):
         raise NotImplementedError
 
-    def append(self):
-        raise NotImplementedError
-
 
 class FileStreamer(BaseStreamer):
     freq = None
@@ -156,71 +140,73 @@ class FileStreamer(BaseStreamer):
 
     def write_rows(self, rows):
         make_dir(self.dir)
-        path = os.path.join(self.dir, fu.get_random_filename())
+        file_name=fu.get_random_filename()
+        print('Write file: %s' % file_name)
+        path = os.path.join(self.dir, file_name)
         fu.write_csv(path, rows)
 
 
 
-class FileSimulation:
-    frequency = None
-    dir = None
-
-    def __init__(self, dir, frequency):
-        """
-
-        :param dir: target location for files
-        :param frequency: number of files to produce per minute
-        """
-        if not(0 < frequency and frequency <= 60):
-            raise ValueError('Frequency arg not in range [1,60]')
-        self.frequency = frequency
-        self.dir = dir
-
-    @property
-    def duration(self):
-        return math.ceil(60/self.frequency)
-
-    def set_sim(self, simulator):
-        self.simulator = simulator
-
-    def run(self):
-
-        while True:
-
-            rows = []
-            for row in self.simulator.gen_row():
-                rows.append(row)
-
-            path = os.path.join(self.dir, fu.get_random_filename())
-            fu.write_csv(path, rows)
-
-            time.sleep(self.duration)
-
-
-def create_sim(config_name):
-
-    Config = config[config_name]
-    entity = Config.entity
-    process = Config.process
-    run_per_iter = Config.run_per_iter
-    dir = Config.dir
-    frequency = Config.frequency
-    sim = FabAppSimulator(entity=entity,
-                          process=process,
-                          run_per_iter=run_per_iter)
-    fsim = FileSimulation(dir=dir,
-                          frequency=frequency)
-    fsim.set_sim(sim)
-    return fsim
+# class FileSimulation:
+#     frequency = None
+#     dir = None
+#
+#     def __init__(self, dir, frequency):
+#         """
+#
+#         :param dir: target location for files
+#         :param frequency: number of files to produce per minute
+#         """
+#         if not(0 < frequency and frequency <= 60):
+#             raise ValueError('Frequency arg not in range [1,60]')
+#         self.frequency = frequency
+#         self.dir = dir
+#
+#     @property
+#     def duration(self):
+#         return math.ceil(60/self.frequency)
+#
+#     def set_sim(self, simulator):
+#         self.simulator = simulator
+#
+#     def run(self):
+#
+#         while True:
+#
+#             rows = []
+#             for row in self.simulator.gen_row():
+#                 rows.append(row)
+#
+#             path = os.path.join(self.dir, fu.get_random_filename())
+#             fu.write_csv(path, rows)
+#
+#             time.sleep(self.duration)
 
 
-def main(config_name):
+# def create_sim(config_name):
+#
+#     Config = config[config_name]
+#     entity = Config.entity
+#     process = Config.process
+#     run_per_iter = Config.run_per_iter
+#     dir = Config.dir
+#     frequency = Config.frequency
+#     sim = FabAppSimulator(entity=entity,
+#                           process=process,
+#                           run_per_iter=run_per_iter)
+#     fsim = FileSimulation(dir=dir,
+#                           frequency=frequency)
+#     fsim.set_sim(sim)
+#     return fsim
 
-    sim = create_sim(config_name)
-    sim.run()
 
-
-
-if __name__ == '__main__':
-    # LOG.setLevel(logging.DEBUG)
-    main(sys.argv[1])
+# def main(config_name):
+#
+#     sim = create_sim(config_name)
+#     sim.run()
+#
+#
+#
+# if __name__ == '__main__':
+#     # LOG.setLevel(logging.DEBUG)
+#     main(sys.argv[1])

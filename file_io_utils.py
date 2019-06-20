@@ -21,8 +21,8 @@ def get_this_dir():
 def get_random_filename(add_timestamp=True):
     name_ = str(uuid.uuid4())
     if add_timestamp:
-        now_ = datetime.datetime.now().strftime("%Y-%m-%d-%H%-M-%F")
-    return '-'.join([now_,name_])
+        now_ = datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+    return '--'.join([now_,name_])
 
 
 def delete_dir(path):
@@ -43,7 +43,7 @@ def write_csv(path, rows):
     with open(path, 'w') as file_handle:
         writer = csv.writer(file_handle)
         writer.writerows(rows)
-    LOG.info('Write csv %s', path)
+    LOG.info('write csv %s', path)
 
 
 def delete_file(path):
