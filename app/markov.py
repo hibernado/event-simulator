@@ -46,3 +46,32 @@ def format_link(source, target):
 def gen_transition_matrix(order):
     transition_matrix = np.random.dirichlet(np.ones(order), size=order)
     return transition_matrix
+
+
+class MarkovProcess:
+
+    def __init__(self, process=None, runs_per_iter=None):
+
+        self.process = process
+        self.runs_per_iter = runs_per_iter
+        self.simulator = simulate
+
+    def _init_matrix(self):
+        self.transition_matrix = gen_transition_matrix(len(self.process))
+
+    def init_sim(self, sim, process, runs_per_iter):
+        self.process = process
+        self.runs_per_iter = runs_per_iter
+        self._init_matrix()
+        sim.get = self.get_next
+
+    def get_next(self):
+
+        return next(self._simulate())
+
+    def _simulate(self):
+
+        for a, b in self.simulator(self.runs_per_iter,
+                                   self.process,
+                                   self.transition_matrix):
+            yield a, b

@@ -1,8 +1,11 @@
 from config import config
-from main import Simulator, FileStreamer, MarkovProcess
+from app.sim import Simulator
+from app.streams import FileStreamer
+from app.markov import MarkovProcess
 
 file_streamer = FileStreamer()
 markov_process = MarkovProcess()
+
 
 def create_sim(config_name):
     sim = Simulator(__name__)
@@ -19,7 +22,6 @@ def create_sim(config_name):
 def main(config_name, duration):
     sim = create_sim(config_name)
     sim.run(duration=duration)
-    # file_streamer.stop()
 
 
 if __name__ == '__main__':
