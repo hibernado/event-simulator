@@ -55,6 +55,8 @@ class MarkovProcess:
         self.process = process
         self.runs_per_iter = runs_per_iter
         self.simulator = simulate
+        if process and runs_per_iter:
+            self._init_matrix()
 
     def _init_matrix(self):
         self.transition_matrix = gen_transition_matrix(len(self.process))
