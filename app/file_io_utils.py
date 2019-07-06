@@ -1,11 +1,10 @@
-import os
+import csv
+import datetime
 import logging
+import os
+import shutil
 import tempfile
 import uuid
-import datetime
-import shutil
-import csv
-
 
 LOG = logging.getLogger(__name__)
 
@@ -22,20 +21,20 @@ def get_random_filename(add_timestamp=True):
     name_ = str(uuid.uuid4())
     if add_timestamp:
         now_ = datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
-    return '--'.join([now_,name_])
+    return '--'.join([now_, name_])
 
 
 def delete_dir(path):
     try:
         shutil.rmtree(path)
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         LOG.info('Directory does not exist: %s', path)
 
 
 def make_dir(path):
     try:
         os.mkdir(path)
-    except FileExistsError as e:
+    except FileExistsError:
         LOG.info('Directory already exits: %s', path)
 
 

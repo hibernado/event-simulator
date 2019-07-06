@@ -28,7 +28,7 @@ class FileStreamer(BaseStreamer):
 
     def write_rows(self, rows):
         make_dir(self.dir)
-        file_name=fu.get_random_filename()
+        file_name = fu.get_random_filename()
         print('write file: %s' % file_name)
         path = os.path.join(self.dir, file_name)
         fu.write_csv(path, rows)

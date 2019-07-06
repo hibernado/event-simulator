@@ -5,7 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
-coverage = "*"
+flake8 = "*"
+codecov = "*"
 pytest-cov = "*"
 
 [packages]

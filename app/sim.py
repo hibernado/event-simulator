@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 
 
 class Config(dict):
@@ -64,7 +64,7 @@ class Simulator(BaseSimulator):
         try:
             pending = asyncio.Task.all_tasks()
             loop.run_until_complete(asyncio.gather(*pending))
-        except asyncio.CancelledError as e:
+        except asyncio.CancelledError:
             print('run cancelled')
 
 
