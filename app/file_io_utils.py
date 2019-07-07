@@ -13,8 +13,8 @@ def get_temp_dir():
     return tempfile.gettempdir()
 
 
-def get_this_dir():
-    return os.path.dirname(os.path.realpath(__file__))
+def get_this_dir(file_path=__file__):
+    return os.path.dirname(os.path.realpath(file_path))
 
 
 def get_random_filename(add_timestamp=True):
