@@ -17,10 +17,14 @@ def get_this_dir(file_path=__file__):
     return os.path.dirname(os.path.realpath(file_path))
 
 
+def now():
+    return datetime.datetime.now()
+
+
 def get_random_filename(add_timestamp=True):
     name_ = str(uuid.uuid4())
     if add_timestamp:
-        now_ = datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+        now_ = now().strftime("%Y-%m-%d--%H-%M-%S")
     return '--'.join([now_, name_])
 
 
