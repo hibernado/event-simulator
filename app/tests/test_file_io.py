@@ -1,9 +1,15 @@
 from datetime import datetime
 from os.path import realpath
+from pathlib import Path
 
 import mock
 
 import app.file_io_utils as io
+
+
+def test_get_tempdir():
+    dir_ = io.get_temp_dir()
+    assert Path(dir_).is_dir()
 
 
 def test_get_this_dir():
