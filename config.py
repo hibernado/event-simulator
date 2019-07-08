@@ -20,6 +20,7 @@ class EcommerceUserConfig(Config):
     #
     # ECOM_ENTITY = 'CustomerA'
     ECOM_RUNS_PER_ITER = 20
+    ECOM_PROCESS_OUTPUT_FORMAT = 'indexed-tuple'
     #
     # OUTPUT_TYPE = 'file'
     OUTPUT_DIR = './streaming_input'
