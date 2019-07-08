@@ -15,7 +15,8 @@ def create_sim(config_name):
                            freq=sim.config.get('OUTPUT_FILE_FREQUENCY'))
     markov_process.init_sim(sim=sim,
                             process=sim.config.get('ECOM_PROCESS'),
-                            runs_per_iter=sim.config.get('ECOM_RUNS_PER_ITER'))
+                            runs_per_iter=sim.config.get('ECOM_RUNS_PER_ITER'),
+                            format=sim.config.get('ECOM_PROCESS_OUTPUT_FORMAT'))
     return sim
 
 

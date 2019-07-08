@@ -33,6 +33,8 @@ def delete_dir(path):
         shutil.rmtree(path)
     except FileNotFoundError:
         LOG.info('Directory does not exist: %s', path)
+        return False
+    return True
 
 
 def make_dir(path):
@@ -40,6 +42,8 @@ def make_dir(path):
         os.mkdir(path)
     except FileExistsError:
         LOG.info('Directory already exits: %s', path)
+        return False
+    return True
 
 
 def write_csv(path, rows):

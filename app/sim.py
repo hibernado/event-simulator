@@ -31,11 +31,18 @@ class BaseSimulator:
     def run(self):
         raise NotImplementedError
 
+    def get(self):
+        raise NotImplementedError
+
+    def put(self):
+        raise NotImplementedError
+
 
 class Simulator(BaseSimulator):
-    def __init__(self, name):
+    def __init__(self, name, get=None, put=None):
         super().__init__(name)
-
+        self.get = get
+        self.put = put
         self.tasks = []
 
     async def get_event(self):
@@ -66,14 +73,3 @@ class Simulator(BaseSimulator):
             loop.run_until_complete(asyncio.gather(*pending))
         except asyncio.CancelledError:
             print('run cancelled')
-
-
-class FabAppSimulator(BaseSimulator):
-
-    def __init__(self, entity, **kwargs):
-        super().__init__(**kwargs)
-        self.entity = entity
-
-    def gen_row(self):
-        for a, b in self._simulate():
-            yield [self.entity, a, b]
