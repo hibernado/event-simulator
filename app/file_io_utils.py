@@ -46,9 +46,9 @@ def make_dir(path):
     return True
 
 
-def write_csv(path, rows):
+def write_csv(path, rows, delim=","):
     with open(path, 'w') as file_handle:
-        writer = csv.writer(file_handle)
+        writer = csv.writer(file_handle, delimiter=delim)
         writer.writerows(rows)
     LOG.info('write csv %s', path)
 

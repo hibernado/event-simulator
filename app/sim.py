@@ -48,7 +48,7 @@ class Simulator(BaseSimulator):
     async def get_event(self):
         while True:
             self.queue.append(self.get())
-            await asyncio.sleep(.1)
+            await asyncio.sleep(.01)
 
     async def put_event(self):
         while True:
