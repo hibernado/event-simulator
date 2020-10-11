@@ -20,9 +20,10 @@ class FileStreamer(BaseStreamer):
     def __init__(self):
         super().__init__()
 
-    def init_sim(self, sim, dir, freq):
+    def init_sim(self, sim, dir, freq, delim):
         self.dir = dir
         self.freq = sim.config.get
+        self.delim = delim
         # Register streamer with sim
         sim.put = self.write_rows
 
@@ -31,4 +32,4 @@ class FileStreamer(BaseStreamer):
         file_name = fu.get_random_filename()
         print('write file: %s' % file_name)
         path = os.path.join(self.dir, file_name)
-        fu.write_csv(path, rows)
+        fu.write_csv(path, rows, self.delim)

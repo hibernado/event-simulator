@@ -12,7 +12,8 @@ def create_sim(config_name):
     sim.config.from_object(config[config_name])
     file_streamer.init_sim(sim=sim,
                            dir=sim.config.get('OUTPUT_DIR'),
-                           freq=sim.config.get('OUTPUT_FILE_FREQUENCY'))
+                           freq=sim.config.get('OUTPUT_FILE_FREQUENCY'),
+                           delim=sim.config.get('OUTPUT_FILE_DELIMITER'))
     markov_process.init_sim(sim=sim,
                             process=sim.config.get('ECOM_PROCESS'),
                             runs_per_iter=sim.config.get('ECOM_RUNS_PER_ITER'),
@@ -27,4 +28,4 @@ def main(config_name, duration):
 
 if __name__ == '__main__':
     main(config_name='ecom_one_visitor',
-         duration=8)
+         duration=180)
