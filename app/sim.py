@@ -47,12 +47,13 @@ class Simulator(BaseSimulator):
 
     async def get_event(self):
         while True:
-            self.queue.append(self.get())
-            await asyncio.sleep(.01)
+            async for event in self.get():
+                self.queue.append(event)
+            await asyncio.sleep(.0000001)
 
-    async def put_event(self):
+    async def flush_events(self):
         while True:
-            self.put(self.queue)
+            await self.put(self.queue)
             self.queue = []
             await asyncio.sleep(3)
 
@@ -64,7 +65,7 @@ class Simulator(BaseSimulator):
         print('run')
         loop = asyncio.get_event_loop()
         self.tasks.append(loop.create_task(self.get_event()))
-        self.tasks.append(loop.create_task(self.put_event()))
+        self.tasks.append(loop.create_task(self.flush_events()))
 
         loop.call_later(duration, self.stop)
 
