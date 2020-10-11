@@ -5,14 +5,13 @@ import numpy as np
 
 def get_next_state(list_):
     ret = [0] * len(list_)
-    ret[rnd.choices(range(len(list_)), weights=list_)[0]] = 1
-    return ret
+    next_state_indx = rnd.choices(range(len(list_)), weights=list_)[0]
+    ret[next_state_indx] = 1
+    return ret, next_state_indx
 
 
-def get_human_state(states, vector):
-    for state, vec in zip(states, vector):
-        if vec == 1:
-            return state
+def get_human_state(states, indx):
+    return states[indx]
 
 
 def simulate(runs, states, transition_matrix, seed=None):
@@ -31,12 +30,13 @@ def simulate(runs, states, transition_matrix, seed=None):
     if seed is not None:
         rnd.seed(seed)
     state_vector = [0] * len(states)
-    state_vector[rnd.randint(0, len(states) - 1)] = 1
+    indx = rnd.randint(0, len(states) - 1)
+    state_vector[indx] = 1
     for i in range(runs):
-        prev = get_human_state(states, state_vector)
+        prev = get_human_state(states, indx)
         state_dot_prod_trans = np.dot(state_vector, transition_matrix)
-        state_vector = get_next_state(state_dot_prod_trans)
-        curr = get_human_state(states, state_vector)
+        state_vector, indx = get_next_state(state_dot_prod_trans)
+        curr = get_human_state(states, indx)
 
         yield prev, curr
 
@@ -85,9 +85,9 @@ class MarkovProcess:
     def init_sim(self, sim):
         sim.get = self.get_next
 
-    def get_next(self, seed=None):
-        a, b = next(self._simulate(seed))
-        return self.format(a, b)
+    async def get_next(self, seed=None):
+        for a, b in self._simulate(seed):
+            yield self.format(a, b)
 
     def _simulate(self, seed=None):
 
