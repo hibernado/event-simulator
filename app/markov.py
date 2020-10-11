@@ -82,11 +82,7 @@ class MarkovProcess:
         elif format == 'dict':
             self.format = self._formatter_dict
 
-    def init_sim(self, sim, process, runs_per_iter, format, seed=None):
-        self.process = process
-        self.runs_per_iter = runs_per_iter
-        self._init_matrix(seed)
-        self._init_formatter(format)
+    def init_sim(self, sim):
         sim.get = self.get_next
 
     def get_next(self, seed=None):
