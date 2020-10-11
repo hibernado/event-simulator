@@ -17,14 +17,13 @@ class FileStreamer(BaseStreamer):
     freq = None
     dir = None
 
-    def __init__(self):
+    def __init__(self, dir, freq, delim):
+        self.dir = dir
+        self.freq = freq
+        self.delim = delim
         super().__init__()
 
-    def init_sim(self, sim, dir, freq, delim):
-        self.dir = dir
-        self.freq = sim.config.get
-        self.delim = delim
-        # Register streamer with sim
+    def init_sim(self, sim):
         sim.put = self.write_rows
 
     def write_rows(self, rows):

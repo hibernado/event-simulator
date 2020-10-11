@@ -1,5 +1,3 @@
-import pytest
-
 import app.sim as sim
 
 
@@ -13,16 +11,6 @@ def test_config_from_object():
     config.from_object(object_)
     assert config.get('lower_case') is None
     assert config.get('UPPER_CASE') == 2
-
-
-def test_base_simulator():
-    sim_ = sim.BaseSimulator('test')
-    with pytest.raises(NotImplementedError):
-        sim_.run()
-    with pytest.raises(NotImplementedError):
-        sim_.get()
-    with pytest.raises(NotImplementedError):
-        sim_.put()
 
 
 def test_simulator():

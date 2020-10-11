@@ -3,17 +3,15 @@ from app.sim import Simulator
 from app.streams import FileStreamer
 from app.markov import MarkovProcess
 
-file_streamer = FileStreamer()
-markov_process = MarkovProcess()
-
 
 def create_sim(config_name):
     sim = Simulator(__name__)
     sim.config.from_object(config[config_name])
-    file_streamer.init_sim(sim=sim,
-                           dir=sim.config.get('OUTPUT_DIR'),
-                           freq=sim.config.get('OUTPUT_FILE_FREQUENCY'),
-                           delim=sim.config.get('OUTPUT_FILE_DELIMITER'))
+    file_streamer = FileStreamer(dir=sim.config.get('OUTPUT_DIR'),
+                                 freq=sim.config.get('OUTPUT_FILE_FREQUENCY'),
+                                 delim=sim.config.get('OUTPUT_FILE_DELIMITER'))
+    markov_process = MarkovProcess()
+    file_streamer.init_sim(sim=sim)
     markov_process.init_sim(sim=sim,
                             process=sim.config.get('ECOM_PROCESS'),
                             runs_per_iter=sim.config.get('ECOM_RUNS_PER_ITER'),
